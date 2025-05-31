@@ -1,0 +1,26 @@
+
+*************Try del login: 
+
+{
+  "email": "juan@cuc.ac.cr",
+  "password": "1234",
+  "tipoUsuario": "funcionario"
+}
+
+*************Try del refresh token (Trabaja con el refresh token):
+
+{
+  "refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c3VhcmlvSWQiOjEsImlhdCI6MTc0ODMxODExMSwiZXhwIjoxNzQ4MzE5MDExfQ.3VwTW-bcWrRk43KewP2ahvLigR4nzy5C8GgqHWRtZaQ"
+}
+
+
+*************Try del validate (Trabaja con el access token): 
+
+{
+  "token": "aquí_va_el_access_token"
+}
+
+****Consultas --
+1. La fecha se muestra en UTC o en hora de Costa Rica? 
+2. Los tokens hay que guardarlos en la BD?
+3. Ocupa interfaz gráfica la solucion?
