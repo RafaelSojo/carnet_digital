@@ -2,9 +2,9 @@
 *************Try del login: 
 
 {
-  "email": "juan@cuc.ac.cr",
+  "email": "rafael.sojo.barquero@cuc.ac.cr",
   "password": "1234",
-  "tipoUsuario": "funcionario"
+  "tipoUsuario": "estudiante"
 }
 
 *************Try del refresh token (Trabaja con el refresh token):
@@ -24,3 +24,16 @@
 1. La fecha se muestra en UTC o en hora de Costa Rica? 
 2. Los tokens hay que guardarlos en la BD?
 3. Ocupa interfaz gráfica la solucion?
+
+
+
+**************Generar Hash de bcrypt
+const bcrypt = require('bcrypt');
+bcrypt.hash('1234', 10).then(console.log);
+
+
+***************Comparar Hash de bcrypt
+const bcrypt = require('bcrypt');
+const hash = '$2b$10$4M1yQ3ktUQ.WvMleY6yNe.NUo/4um1bZfLLZWXHEZV6EeP/xDg7iW';
+
+bcrypt.compare('1234', hash).then(console.log); // debe imprimir true
