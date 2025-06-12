@@ -1,12 +1,4 @@
 
-*************Try del login: 
-
-{
-  "email": "rafael.sojo.barquero@cuc.ac.cr",
-  "password": "1234",
-  "tipoUsuario": "estudiante"
-}
-
 *************Try del refresh token (Trabaja con el refresh token):
 
 {
