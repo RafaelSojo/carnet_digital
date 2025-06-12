@@ -1,5 +1,3 @@
-## Proyecto Programación V - CARNET DIGITAL - Primer Alcance
-
 ## 1.Descargar el repositorio.
 ---
 
