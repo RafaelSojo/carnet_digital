@@ -30,7 +30,7 @@ const authMiddleware = require('../middlewares/auth.middleware');
  *       200:
  *         description: Estado actualizado correctamente
  *       400:
- *         description: Datos inválidos
+ *         description: Todos los datos son requeridos y no pueden ser vacíos ni espacios en blanco
  *       404:
  *         description: Usuario o estado no encontrado
  */

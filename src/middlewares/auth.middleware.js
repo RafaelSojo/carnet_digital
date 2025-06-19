@@ -4,7 +4,7 @@ exports.validateToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader)
-    return res.status(401).json();
+    return res.sendStatus(401);
 
   const token = authHeader.split(' ')[1];
 
@@ -13,12 +13,12 @@ exports.validateToken = (req, res, next) => {
 
     //  Validacion que sea un access token
     if (decoded.tipo !== 'access') {
-      return res.status(401).json();
+      return res.sendStatus(401);
     }
 
     req.usuarioId = decoded.usuarioId;
     next();
   } catch (error) {
-    return res.status(401).json();
+    return res.sendStatus(401);
   }
 };

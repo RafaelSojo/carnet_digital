@@ -96,24 +96,24 @@ exports.login = async (req, res) => {
   const tipoUsuario = req.headers['tipousuario'];
 
   if (!usuario || !contrasena || !tipoUsuario)
-    return res.status(400).json({ message: 'Todos los datos son requeridos y no pueden ser nulos o blancos' });
+    return res.status(400).json({ error: 'Todos los datos son requeridos y no pueden ser nulos o blancos' });
 
   try {
     const user = await Usuario.findOne({ where: { usuario, tipo_usuario: tipoUsuario } });
 
     if (!user)
-      return res.status(401).json({ message: 'Usuario y/o contraseña incorrectos' });
+      return res.status(401).json({ error: 'Usuario y/o contraseña incorrectos' });
 
     const passwordOk = await bcrypt.compare(contrasena, user.contrasena);
     if (!passwordOk)
-      return res.status(401).json({ message: 'Usuario y/o contraseña incorrectos' });
+      return res.status(401).json({ error: 'Usuario y/o contraseña incorrectos' });
 
     const tokens = generarToken(user.usuarioId);
     return res.status(201).json(tokens);
 
   } catch (error) {
     console.error('Error en login:', error);
-    return res.status(500).json({ message: 'Error en el servidor' });
+    return res.status(500).json({ error: 'Error en el servidor' });
   }
 };
 
@@ -124,19 +124,19 @@ exports.refresh = (req, res) => {
   const { refresh_token } = req.body;
 
   if (!refresh_token)
-    return res.status(400).json({ message: 'refresh_token requerido' });
+    return res.status(400).json({ error: 'refresh_token requerido' });
 
   try {
     const decoded = jwt.verify(refresh_token, process.env.JWT_SECRET);
 
     if (decoded.tipo !== 'refresh') {
-      return res.status(401).json({ message: 'No autorizado' });
+      return res.status(401).json({ error: 'No autorizado' });
     }
 
     const tokens = generarRefreshToken(decoded.usuarioId);
     return res.status(201).json(tokens);
   } catch (err) {
-    return res.status(401).json({ message: 'No autorizado' });
+    return res.status(401).json({ error: 'No autorizado' });
   }
 };
 
@@ -147,13 +147,13 @@ exports.validate = (req, res) => {
   const { token } = req.body;
 
   if (!token)
-    return res.status(401).json();
+    return res.sendStatus(401);
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     if (decoded.tipo !== 'access') {
-      return res.status(401).json();
+      return res.sendStatus(401);
     }
 
     return res.status(200).json(true);
