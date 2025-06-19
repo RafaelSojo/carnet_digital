@@ -30,7 +30,7 @@ const generarToken = (usuarioId) => {
   );
 
   return {
-    expires_in: new Date(Date.now() + jwtMs).toLocaleString('es-CR', { timeZone: 'America/Costa_Rica' }),
+    expires_in: new Date(Date.now() + jwtMs).toLocaleTimeString('es-CR', { timeZone: 'America/Costa_Rica', hour12: false }),
     access_token,
     refresh_token,
     usuarioID: usuarioId,
@@ -65,7 +65,7 @@ const generarRefreshToken = (usuarioId) => {
     { expiresIn: refreshExpires }
   );
   return {
-    expires_in: new Date(Date.now() + jwtMs).toLocaleString('es-CR', { timeZone: 'America/Costa_Rica' }),
+    expires_in: new Date(Date.now() + jwtMs).toLocaleTimeString('es-CR', { timeZone: 'America/Costa_Rica', hour12: false }),
     access_token,
     refresh_token,
   };
