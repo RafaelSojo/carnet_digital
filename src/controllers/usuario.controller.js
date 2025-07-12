@@ -20,7 +20,7 @@ exports.cambiarEstado = async (req, res) => {
     usuario.estadoId = estadoId;
     await usuario.save();
 
-    return res.status(200).json({ error: 'Estado actualizado correctamente' });
+    return res.status(200).json({ mensaje: 'Estado actualizado correctamente' });
   } catch (error) {
     console.error('Error al cambiar estado:', error);
     return res.status(500).json({ error: 'Error interno del servidor' });
