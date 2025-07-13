@@ -18,3 +18,9 @@ npm install
 npm run dev
 ```
 ---
+
+## 6. Correr frontend
+```bash 
+npm run dev
+```
+---

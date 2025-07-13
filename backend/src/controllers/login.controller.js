@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const Usuario = require('../models/Usuario');
 
-const generarToken = (usuarioId) => {
+const generarToken = (usuarioId, nombre_completo) => {
   const jwtExpires = process.env.JWT_EXPIRES;
   const refreshExpires = process.env.REFRESH_EXPIRES;
 
@@ -24,7 +24,7 @@ const generarToken = (usuarioId) => {
   );
 
   const refresh_token = jwt.sign(
-    { usuarioId, tipo: 'refresh' }, // 👈 Agregamos el claim tipo
+    { usuarioId, tipo: 'refresh', nombre_completo}, // 👈 Agregamos el claim tipo
     process.env.JWT_SECRET,
     { expiresIn: refreshExpires }
   );
@@ -34,10 +34,11 @@ const generarToken = (usuarioId) => {
     access_token,
     refresh_token,
     usuarioID: usuarioId,
+    nombre_completo: nombre_completo, // 👈 Agregamos el nombre completo del usuario
   };
 };
 
-const generarRefreshToken = (usuarioId) => {
+const generarRefreshToken = (usuarioId, nombre_completo) => {
   const jwtExpires = process.env.JWT_EXPIRES;
   const refreshExpires = process.env.REFRESH_EXPIRES;
 
@@ -60,7 +61,7 @@ const generarRefreshToken = (usuarioId) => {
   );
 
   const refresh_token = jwt.sign(
-    { usuarioId, tipo: 'refresh' }, // 👈 Agregamos el claim tipo
+    { usuarioId, tipo: 'refresh', nombre_completo}, // 👈 Agregamos el claim tipo
     process.env.JWT_SECRET,
     { expiresIn: refreshExpires }
   );
@@ -95,6 +96,7 @@ exports.login = async (req, res) => {
   const contrasena = req.headers['contrasena'];
   const tipoUsuario = req.headers['tipousuario'];
 
+  //Validacion de todos los campos llenos
   if (!usuario || !contrasena || !tipoUsuario)
     return res.status(400).json({ error: 'Todos los datos son requeridos y no pueden ser nulos o blancos' });
 
@@ -104,11 +106,38 @@ exports.login = async (req, res) => {
     if (!user)
       return res.status(401).json({ error: 'Usuario y/o contraseña incorrectos' });
 
-    const passwordOk = await bcrypt.compare(contrasena, user.contrasena);
-    if (!passwordOk)
-      return res.status(401).json({ error: 'Usuario y/o contraseña incorrectos' });
+    // Verificar si el usuario está bloqueado
+    if (user.bloqueado)
+      return res.status(423).json({ error: 'Usuario bloqueado por múltiples intentos fallidos' });
 
-    const tokens = generarToken(user.usuarioId);
+    const passwordOk = await bcrypt.compare(contrasena, user.contrasena);
+    
+    if (!passwordOk) {
+      // Incrementar contador de intentos fallidos
+      const intentosFallidos = (user.intentos_fallidos || 0) + 1;
+      
+      // Actualizar contador de intentos fallidos
+      await user.update({ intentos_fallidos: intentosFallidos });
+      
+      // Verificar si debe bloquearse DESPUÉS de actualizar
+      if (intentosFallidos >= 3) {
+        // Bloquear usuario al tercer intento
+        await user.update({ bloqueado: true });
+        return res.status(423).json({ error: 'Usuario bloqueado por múltiples intentos fallidos' });
+      } else {
+        return res.status(401).json({ 
+          error: 'Usuario y/o contraseña incorrectos',
+          //intentosRestantes: 3 - intentosFallidos
+        });
+      }
+    }
+
+    // Login exitoso: resetear contador de intentos fallidos
+    if (user.intentos_fallidos > 0) {
+      await user.update({ intentos_fallidos: 0 });
+    }
+
+    const tokens = generarToken(user.usuarioId, user.nombre_completo);
     return res.status(201).json(tokens);
 
   } catch (error) {
@@ -121,22 +150,24 @@ exports.login = async (req, res) => {
 // REFRESH
 // --------------------------
 exports.refresh = (req, res) => {
-  const { refresh_token } = req.body;
+  const authHeader = req.headers.authorization;
 
-  if (!refresh_token)
-    return res.status(400).json({ error: 'refresh_token requerido' });
+  if (!authHeader)
+    return res.status(400).json({ message: 'No autorizado' });
+
+  const refresh_token = authHeader.split(' ')[1];
 
   try {
     const decoded = jwt.verify(refresh_token, process.env.JWT_SECRET);
 
     if (decoded.tipo !== 'refresh') {
-      return res.status(401).json({ error: 'No autorizado' });
+      return res.status(401).json({ message: 'No autorizado' });
     }
 
-    const tokens = generarRefreshToken(decoded.usuarioId);
+    const tokens = generarRefreshToken(decoded.usuarioId, decoded.nombre_completo);
     return res.status(201).json(tokens);
-  } catch (err) {
-    return res.status(401).json({ error: 'No autorizado' });
+  } catch {
+    return res.status(401).json({ message: 'No autorizado' });
   }
 };
 
@@ -144,10 +175,12 @@ exports.refresh = (req, res) => {
 // VALIDATE
 // --------------------------
 exports.validate = (req, res) => {
-  const { token } = req.body;
+  const authHeader = req.headers.authorization;
 
-  if (!token)
+  if (!authHeader)
     return res.sendStatus(401);
+
+  const token = authHeader.split(' ')[1];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
