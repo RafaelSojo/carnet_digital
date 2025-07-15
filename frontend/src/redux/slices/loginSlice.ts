@@ -6,15 +6,26 @@ interface LoginState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
-  errorType: string | null; // Campo adicional para clasificar el tipo de error
+  errorType: string | null;
 }
 
+const getStoredUser = (): Usuario | null => {
+  try {
+    const storedUser = localStorage.getItem("usuario");
+    return storedUser ? JSON.parse(storedUser) : null;
+  } catch (error) {
+    console.error("Error parsing stored user:", error);
+    localStorage.removeItem("usuario");
+    return null;
+  }
+};
+
 const initialState: LoginState = {
-  Usuario: null,
-  isAuthenticated: false,
+  Usuario: getStoredUser(),
+  isAuthenticated: !!getStoredUser(),
   loading: false,
   error: null,
-  errorType: null, // Inicializado como null
+  errorType: null,
 };
 
 const loginSlice = createSlice({
@@ -24,23 +35,27 @@ const loginSlice = createSlice({
     loginStart: (state) => {
       state.loading = true;
       state.error = null;
-      state.errorType = null; // Resetear el tipo de error al comenzar el login
+      state.errorType = null;
     },
     loginSuccess: (state, action: PayloadAction<Usuario>) => {
       state.isAuthenticated = true;
       state.Usuario = action.payload;
       state.loading = false;
       state.error = null;
-      state.errorType = null; // No hay error después de un login exitoso
+      state.errorType = null;
+
+      // Guardar el usuario completo en localStorage
+      localStorage.setItem("usuario", JSON.stringify(action.payload));
     },
     loginFailure: (state, action: PayloadAction<{ message: string; errorType: string }>) => {
       state.loading = false;
-      state.error = action.payload.message; // Asignar el mensaje del error
-      state.errorType = action.payload.errorType; // Asignar el tipo de error
+      state.error = action.payload.message;
+      state.errorType = action.payload.errorType;
     },
     logout: (state) => {
       state.isAuthenticated = false;
       state.Usuario = null;
+      localStorage.removeItem("usuario");
     },
   },
 });

@@ -5,5 +5,6 @@ export interface Usuario {
   refresh_token: string;
   usuarioID: number;
   expires_in: string;
-  nombre_completo: string; // puede ser string o Date si lo conviertes
+  nombre_completo: string;
+   // puede ser string o Date si lo conviertes
 }

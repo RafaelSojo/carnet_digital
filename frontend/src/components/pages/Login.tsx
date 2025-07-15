@@ -37,26 +37,30 @@ const Login: React.FC = () => {
     dispatch(loginStart());
 
     try {
-      const {
-        access_token,
-        refresh_token,
-        usuarioID,
-        expires_in,
-        nombre_completo // Asegúrate de que el backend envíe este campo
-      } = await login(username, password);
+  const {
+    access_token,
+    refresh_token,
+    usuarioID,
+    expires_in,
+    nombre_completo
+  } = await login(username, password);
 
-      const formattedUserData = {
-        Usuario: username,
-        Contrasenia: password,
-        access_token,
-        refresh_token,
-        usuarioID,
-        expires_in,
-        nombre_completo
-      };
+  const formattedUserData = {
+    Usuario: username,
+    Contrasenia: password,
+    access_token,
+    refresh_token,
+    usuarioID,
+    expires_in,
+    nombre_completo
+  };
 
-      dispatch(loginSuccess(formattedUserData));
-      navigate('/dashboard');
+  dispatch(loginSuccess(formattedUserData));
+
+  // ✅ Guarda la sesión en localStorage
+  localStorage.setItem("usuario", JSON.stringify(formattedUserData));
+
+  navigate('/dashboard');
     } catch (error: unknown) {
       let errorMsg = 'Usuario y/o contraseña incorrectos';
 

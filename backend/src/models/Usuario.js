@@ -12,9 +12,6 @@ const Usuario = sequelize.define('Usuario', {
   tipo_usuario: { type: DataTypes.STRING, allowNull: false },
   bloqueado: { type: DataTypes.BOOLEAN, defaultValue: false, allowNull: false },
   intentos_fallidos: { type: DataTypes.INTEGER, defaultValue: 0, allowNull: false },
-  
-
-  // 👉 Agregamos el estado
   estadoId: { type: DataTypes.INTEGER, allowNull: true }
 }, {
   tableName: 'usuarios',

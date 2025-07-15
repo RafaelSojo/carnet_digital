@@ -36,6 +36,6 @@ const authMiddleware = require('../middlewares/auth.middleware');
  */
 router.patch('/estado', authMiddleware.validateToken, usuarioController.cambiarEstado);
 
-
+router.get('/', authMiddleware.validateToken, usuarioController.obtenerUsuarios);
 
 module.exports = router;

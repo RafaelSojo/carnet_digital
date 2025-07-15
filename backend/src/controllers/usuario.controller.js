@@ -26,3 +26,29 @@ exports.cambiarEstado = async (req, res) => {
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
+
+exports.obtenerUsuarios = async (req, res) => {
+  try {
+    const usuarios = await Usuario.findAll({
+      include: {
+        model: EstadoUsuario,
+        as: 'estado',
+        attributes: ['estadoId', 'codigo', 'descripcion'],
+      },
+      attributes: ['usuarioId', 'nombre_completo', 'usuario', 'estadoId']
+    });
+
+    const resultado = usuarios.map((u) => ({
+      id: u.usuarioId,
+      nombre_completo: u.nombre_completo,
+      email: u.usuario,
+      estado_id: u.estadoId,
+      estado_nombre: u.estado?.descripcion || 'Desconocido',
+    }));
+
+    return res.json(resultado);
+  } catch (error) {
+    console.error('Error al obtener usuarios:', error);
+    return res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};

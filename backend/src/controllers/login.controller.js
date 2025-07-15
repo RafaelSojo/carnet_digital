@@ -30,7 +30,16 @@ const generarToken = (usuarioId, nombre_completo) => {
   );
 
   return {
-    expires_in: new Date(Date.now() + jwtMs).toLocaleTimeString('es-CR', { timeZone: 'America/Costa_Rica', hour12: false }),
+    expires_in: new Date(Date.now() + jwtMs).toLocaleString('es-CR', {
+  timeZone: 'America/Costa_Rica',
+  hour12: false,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit'
+}),
     access_token,
     refresh_token,
     usuarioID: usuarioId,
@@ -66,7 +75,16 @@ const generarRefreshToken = (usuarioId, nombre_completo) => {
     { expiresIn: refreshExpires }
   );
   return {
-    expires_in: new Date(Date.now() + jwtMs).toLocaleTimeString('es-CR', { timeZone: 'America/Costa_Rica', hour12: false }),
+    expires_in: new Date(Date.now() + jwtMs).toLocaleString('es-CR', {
+  timeZone: 'America/Costa_Rica',
+  hour12: false,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit'
+}),
     access_token,
     refresh_token,
   };
