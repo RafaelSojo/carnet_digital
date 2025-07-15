@@ -2,9 +2,12 @@ import React, { useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { loginStart, loginSuccess, loginFailure } from '../../redux/slices/loginSlice';
-import { login } from '../../api/loginApi';  
+import { login } from '../../api/loginApi';
 import Button from '../common/Button';
+import axios from 'axios';
+import api from "../../api/axios";
 import { AppDispatch, RootState } from '../../redux/store';
+import { obtenerUsuarioPorId } from '../../api/usuarioApi';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -37,44 +40,37 @@ const Login: React.FC = () => {
     dispatch(loginStart());
 
     try {
-  const {
-    access_token,
-    refresh_token,
-    usuarioID,
-    expires_in,
-    nombre_completo
-  } = await login(username, password);
+      const {
+        access_token,
+        refresh_token,
+        usuarioID,
+        expires_in
+      } = await login(username, password);
 
-  const formattedUserData = {
-    Usuario: username,
-    Contrasenia: password,
-    access_token,
-    refresh_token,
-    usuarioID,
-    expires_in,
-    nombre_completo
-  };
+      // Consulta al backend para obtener el nombre_completo
+      // Dentro de handleSubmit
+      api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+      const userData = await obtenerUsuarioPorId(usuarioID);
+      const nombre_completo = userData?.nombre_completo || username;
 
-  dispatch(loginSuccess(formattedUserData));
+      const formattedUserData = {
+        Usuario: username,
+        access_token,
+        refresh_token,
+        usuarioID,
+        expires_in,
+        nombre_completo,
+      };
 
-  // ✅ Guarda la sesión en localStorage
-  localStorage.setItem("usuario", JSON.stringify(formattedUserData));
+      dispatch(loginSuccess(formattedUserData));
+      localStorage.setItem("usuario", JSON.stringify(formattedUserData));
 
-  navigate('/dashboard');
+      navigate('/dashboard');
     } catch (error: unknown) {
-      let errorMsg = 'Usuario y/o contraseña incorrectos';
+      console.error('Error al realizar login:', error);
 
-      if (
-        error &&
-        typeof error === 'object' &&
-        'response' in error &&
-        error.response &&
-        typeof error.response === 'object' &&
-        'data' in error.response &&
-        error.response.data &&
-        typeof error.response.data === 'object' &&
-        'message' in error.response.data
-       ) {
+      let errorMsg = 'Usuario y/o contraseña incorrectos';
+      if (axios.isAxiosError(error) && error.response?.data?.message) {
         errorMsg = String(error.response.data.message);
       }
 
@@ -90,14 +86,13 @@ const Login: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-
-          <div className="flex justify-center mb-6">
-    <img 
-      src="/logo.jpg" 
-      alt="Logo Los 4 mares" 
-      className="w-50 h-50 rounded-full "
-    />
-  </div>
+        <div className="flex justify-center mb-6">
+          <img
+            src="/logo.jpg"
+            alt="Logo Los 4 mares"
+            className="w-50 h-50 rounded-full"
+          />
+        </div>
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Carnet Digital

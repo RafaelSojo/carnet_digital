@@ -38,4 +38,7 @@ router.patch('/estado', authMiddleware.validateToken, usuarioController.cambiarE
 
 router.get('/', authMiddleware.validateToken, usuarioController.obtenerUsuarios);
 
+router.get('/:id', authMiddleware.validateToken, usuarioController.obtenerUsuarioPorId);
+
+
 module.exports = router;

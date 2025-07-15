@@ -20,7 +20,7 @@ const ESTADOS = [
   { estadoId: 1, descripcion: "Activo" },
   { estadoId: 2, descripcion: "Inactivo" },
   { estadoId: 3, descripcion: "Suspendido" },
-  { estadoId: 4, descripcion: "Bloqueado.0" }
+  { estadoId: 4, descripcion: "Bloqueado" }
 ];
 
 const CambiarEstado: React.FC = () => {

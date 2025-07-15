@@ -8,3 +8,8 @@ export const cambiarEstadoUsuario = async (usuarioId: number, estadoId: number) 
     estadoId,
   });
 };
+
+export const obtenerUsuarioPorId = async (usuarioId: number) => {
+  const response = await api.get(`/usuarios/${usuarioId}`);
+  return response.data;
+};

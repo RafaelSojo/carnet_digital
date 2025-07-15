@@ -1,6 +1,5 @@
 export interface Usuario {
   Usuario: string;
-  Contrasenia: string;
   access_token: string;
   refresh_token: string;
   usuarioID: number;

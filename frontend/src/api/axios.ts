@@ -39,7 +39,6 @@ api.interceptors.response.use(
         // Crear el nuevo objeto usuario completo con los tokens renovados
         const updatedUser = {
           Usuario: current.Usuario,
-          Contrasenia: current.Contrasenia,
           usuarioID: current.usuarioID,
           access_token: newTokens.access_token,
           refresh_token: newTokens.refresh_token,

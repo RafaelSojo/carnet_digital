@@ -9,7 +9,7 @@ export const refreshToken = async () => {
   }
 
   const response = await axios.post(
-    `${import.meta.env.VITE_API_URL}/login/refresh`,
+    `${import.meta.env.VITE_API_URL}/refresh`,
     {}, // body vacío, se usa el token en el header
     {
       headers: {

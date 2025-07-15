@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const Usuario = require('../models/Usuario');
 
-const generarToken = (usuarioId, nombre_completo) => {
+const generarToken = (usuarioId) => {
   const jwtExpires = process.env.JWT_EXPIRES;
   const refreshExpires = process.env.REFRESH_EXPIRES;
 
@@ -24,7 +24,7 @@ const generarToken = (usuarioId, nombre_completo) => {
   );
 
   const refresh_token = jwt.sign(
-    { usuarioId, tipo: 'refresh', nombre_completo}, // 👈 Agregamos el claim tipo
+    { usuarioId, tipo: 'refresh'}, // 👈 Agregamos el claim tipo
     process.env.JWT_SECRET,
     { expiresIn: refreshExpires }
   );
@@ -42,12 +42,11 @@ const generarToken = (usuarioId, nombre_completo) => {
 }),
     access_token,
     refresh_token,
-    usuarioID: usuarioId,
-    nombre_completo: nombre_completo, // 👈 Agregamos el nombre completo del usuario
+    usuarioID: usuarioId, // 👈 Agregamos el nombre completo del usuario
   };
 };
 
-const generarRefreshToken = (usuarioId, nombre_completo) => {
+const generarRefreshToken = (usuarioId) => {
   const jwtExpires = process.env.JWT_EXPIRES;
   const refreshExpires = process.env.REFRESH_EXPIRES;
 
@@ -70,7 +69,7 @@ const generarRefreshToken = (usuarioId, nombre_completo) => {
   );
 
   const refresh_token = jwt.sign(
-    { usuarioId, tipo: 'refresh', nombre_completo}, // 👈 Agregamos el claim tipo
+    { usuarioId, tipo: 'refresh'}, // 👈 Agregamos el claim tipo
     process.env.JWT_SECRET,
     { expiresIn: refreshExpires }
   );
@@ -155,7 +154,7 @@ exports.login = async (req, res) => {
       await user.update({ intentos_fallidos: 0 });
     }
 
-    const tokens = generarToken(user.usuarioId, user.nombre_completo);
+    const tokens = generarToken(user.usuarioId);
     return res.status(201).json(tokens);
 
   } catch (error) {
@@ -182,7 +181,7 @@ exports.refresh = (req, res) => {
       return res.status(401).json({ message: 'No autorizado' });
     }
 
-    const tokens = generarRefreshToken(decoded.usuarioId, decoded.nombre_completo);
+    const tokens = generarRefreshToken(decoded.usuarioId);
     return res.status(201).json(tokens);
   } catch {
     return res.status(401).json({ message: 'No autorizado' });

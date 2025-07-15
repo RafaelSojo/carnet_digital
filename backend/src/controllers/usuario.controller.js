@@ -52,3 +52,36 @@ exports.obtenerUsuarios = async (req, res) => {
     return res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
+
+exports.obtenerUsuarioPorId = async (req, res) => {
+  try {
+    const { id } = req.params; // asegúrate que la ruta tenga :id
+
+    const usuario = await Usuario.findOne({
+      where: { usuarioId: id },
+      include: {
+        model: EstadoUsuario,
+        as: 'estado',
+        attributes: ['estadoId', 'codigo', 'descripcion'],
+      },
+      attributes: ['usuarioId', 'nombre_completo', 'usuario', 'estadoId']
+    });
+
+    if (!usuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    const resultado = {
+      id: usuario.usuarioId,
+      nombre_completo: usuario.nombre_completo,
+      email: usuario.usuario,
+      estado_id: usuario.estadoId,
+      estado_nombre: usuario.estado?.descripcion || 'Desconocido',
+    };
+
+    return res.json(resultado);
+  } catch (error) {
+    console.error('Error al obtener usuario:', error);
+    return res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
