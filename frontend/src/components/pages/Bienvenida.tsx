@@ -16,6 +16,13 @@ const Bienvenida: React.FC = () => {
   </h1>
  
   <div className="mt-6 p-6 bg-blue-100 rounded-lg border border-blue-100">
+            <div className="flex justify-center mb-6">
+          <img
+            src="/logo.jpg"
+            alt="Logo Los 4 mares"
+            className="w-50 h-50 rounded-full"
+          />
+        </div>
     <h2 className="text-xl font-semibold text-blue-800 mb-3">
       Información de la Empresa.
     </h2>

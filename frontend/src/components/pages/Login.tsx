@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { loginStart, loginSuccess, loginFailure } from '../../redux/slices/loginSlice';
 import { login } from '../../api/loginApi';
 import Button from '../common/Button';
@@ -8,6 +8,7 @@ import axios from 'axios';
 import api from "../../api/axios";
 import { AppDispatch, RootState } from '../../redux/store';
 import { obtenerUsuarioPorId } from '../../api/usuarioApi';
+import Swal from 'sweetalert2';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -16,16 +17,25 @@ const Login: React.FC = () => {
   const passwordRef = useRef<HTMLInputElement>(null);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { loading, error, errorType } = useSelector((state: RootState) => state.login);
+  const state = location.state as { message?: string; fromLogout?: boolean } | null;
+
+  useEffect(() => {
+    if (state?.message && !state?.fromLogout) {
+      Swal.fire({
+        icon: 'info',
+        html: `<strong>${state.message}</strong>`,
+        confirmButtonText: 'Aceptar',
+      }).then(() => {
+        navigate(location.pathname, { replace: true });
+      });
+    }
+  }, [state, navigate, location.pathname]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!username) {
-      usernameRef.current?.focus();
-    } else if (!password) {
-      passwordRef.current?.focus();
-    }
 
     if (!username || !password) {
       dispatch(
@@ -34,6 +44,12 @@ const Login: React.FC = () => {
           errorType: 'authError',
         })
       );
+
+      if (!username) {
+        usernameRef.current?.focus();
+      } else {
+        passwordRef.current?.focus();
+      }
       return;
     }
 
@@ -47,8 +63,6 @@ const Login: React.FC = () => {
         expires_in
       } = await login(username, password);
 
-      // Consulta al backend para obtener el nombre_completo
-      // Dentro de handleSubmit
       api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       const userData = await obtenerUsuarioPorId(usuarioID);
       const nombre_completo = userData?.nombre_completo || username;
@@ -88,23 +102,17 @@ const Login: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div className="flex justify-center mb-6">
           <img
-            src="/logo.jpg"
+            src="/logo_carnet.jpg"
             alt="Logo Los 4 mares"
-            className="w-50 h-50 rounded-full"
+            className="w-70 h-50"
           />
         </div>
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Carnet Digital
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Los 4 mares
-          </p>
         </div>
 
         <div className="bg-white p-8 rounded-lg shadow-md">
           {error && errorType === 'authError' && (
-            <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md text-md text-center">
+            <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md text-center text-md">
               {error}
             </div>
           )}

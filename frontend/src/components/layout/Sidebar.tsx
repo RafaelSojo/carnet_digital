@@ -49,6 +49,7 @@ const Sidebar: React.FC = () => {
 
   const handleLogout = () => {
     dispatch(logout());
+    location.pathname = "/login";
   };
 
   type ChildMenuItem = {

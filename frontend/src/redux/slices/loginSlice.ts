@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Usuario } from "../../types/ILogin";
 
-interface LoginState {
+export interface LoginState {
   Usuario: Usuario | null;
   isAuthenticated: boolean;
   loading: boolean;

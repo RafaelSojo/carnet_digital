@@ -5,6 +5,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "./redux/store";
@@ -12,14 +13,30 @@ import { RootState } from "./redux/store";
 // Componentes
 import Bienvenida from "./components/pages/Bienvenida";
 import CambiarEstado from "./components/pages/CambiarEstado";
-import Oferentes from "./components/pages/Oferentes";
 import Login from "./components/pages/Login";
 
 // Componente para proteger rutas privadas
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useSelector((state: RootState) => state.login);
+  const location = useLocation();
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  if (isAuthenticated) return <>{children}</>;
+
+  // Solo enviar mensaje si NO estoy ya en /login
+  if (location.pathname !== "/login") {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          from: location.pathname,
+          message: "Por favor inicie sesión para utilizar el sistema",
+        }}
+      />
+    );
+  }
+
+  return <Navigate to="/login" replace />;
 };
 
 const App: React.FC = () => {
@@ -46,16 +63,8 @@ const App: React.FC = () => {
           }
         />
 
-        <Route
-          path="/oferentesListos/:idPuesto"
-          element={
-            <ProtectedRoute>
-              <Oferentes />
-            </ProtectedRoute>
-          }
-        />
 
-        {/* Redirige a login si no encuentra ruta */}
+        {/* Redirección por defecto */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
