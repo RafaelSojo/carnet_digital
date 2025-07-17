@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const Usuario = require('../models/Usuario');
 const EstadoUsuario = require('../models/EstadoUsuario');
-
+const Bitacora = require('../models/Bitacora'); // Importa el modelo
 
 exports.cambiarEstado = async (req, res) => {
   const { usuarioId, estadoId } = req.body;
@@ -17,12 +17,24 @@ exports.cambiarEstado = async (req, res) => {
     const estado = await EstadoUsuario.findByPk(estadoId);
     if (!estado) return res.status(404).json({ error: 'Estado no encontrado' });
 
+    const estadoAnterior = usuario.estadoId;
+
     usuario.estadoId = estadoId;
     await usuario.save();
+
+    await Bitacora.create({
+      usuario: req.usuarioId,
+      accion: 'UPDATE',
+      descripcion: {
+        antes: { usuarioId: usuario.usuarioId, estadoId: estadoAnterior },
+        despues: { usuarioId: usuario.usuarioId, estadoId: estadoId }
+      }
+    });
 
     return res.status(200).json({ mensaje: 'Estado actualizado correctamente' });
   } catch (error) {
     console.error('Error al cambiar estado:', error);
+    await registrarErrorEnBitacora(req.usuarioId, error.message);
     return res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -46,16 +58,23 @@ exports.obtenerUsuarios = async (req, res) => {
       estado_nombre: u.estado?.descripcion || 'Desconocido',
     }));
 
+    await Bitacora.create({
+      usuario: req.usuarioId,
+      accion: 'CONSULTA',
+      descripcion: { mensaje: 'El usuario consulta la lista de usuarios' }
+    });
+
     return res.json(resultado);
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
+    await registrarErrorEnBitacora(req.usuarioId, error.message);
     return res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
 
 exports.obtenerUsuarioPorId = async (req, res) => {
   try {
-    const { id } = req.params; // asegúrate que la ruta tenga :id
+    const { id } = req.params;
 
     const usuario = await Usuario.findOne({
       where: { usuarioId: id },
@@ -79,9 +98,29 @@ exports.obtenerUsuarioPorId = async (req, res) => {
       estado_nombre: usuario.estado?.descripcion || 'Desconocido',
     };
 
+    await Bitacora.create({
+      usuario: req.usuarioId,
+      accion: 'CONSULTA',
+      descripcion: { mensaje: `El usuario consulta el usuario con ID ${id}` }
+    });
+
     return res.json(resultado);
   } catch (error) {
     console.error('Error al obtener usuario:', error);
+    await registrarErrorEnBitacora(req.usuarioId, error.message);
     return res.status(500).json({ message: 'Error interno del servidor' });
+  }
+};
+
+// Función auxiliar para registrar errores
+const registrarErrorEnBitacora = async (usuarioId, mensaje) => {
+  try {
+    await Bitacora.create({
+      usuario: usuarioId || 'Sistema',
+      accion: 'ERROR',
+      descripcion: { error: mensaje }
+    });
+  } catch (err) {
+    console.error('Error al registrar en bitácora:', err);
   }
 };
