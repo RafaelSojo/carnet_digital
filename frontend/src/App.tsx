@@ -14,6 +14,9 @@ import { RootState } from "./redux/store";
 import Bienvenida from "./components/pages/Bienvenida";
 import CambiarEstado from "./components/pages/CambiarEstado";
 import Login from "./components/pages/Login";
+//Fifes
+import TiposIdentificacion from "./components/pages/TiposIdentificacion";
+import TiposUsuario from "./components/pages/TiposUsuario";
 
 // Componente para proteger rutas privadas
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -59,6 +62,25 @@ const App: React.FC = () => {
           element={
             <ProtectedRoute>
               <CambiarEstado />
+            </ProtectedRoute>
+          }
+        />
+
+
+          <Route
+          path="/TiposIdentificacion"
+          element={
+            <ProtectedRoute>
+              <TiposIdentificacion />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/TiposUsuario"
+          element={
+            <ProtectedRoute>
+              <TiposUsuario />
             </ProtectedRoute>
           }
         />

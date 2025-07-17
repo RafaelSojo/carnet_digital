@@ -36,6 +36,15 @@ app.use('/', loginRoutes);
 const usuarioRoutes = require('./routes/usuarios.routes');
 app.use('/usuarios', usuarioRoutes);
 
+//Fifes
+
+const tiposIdentificacionRoutes = require('./routes/tiposIdentificacion.routes');
+app.use('/tiposIdentificacion', tiposIdentificacionRoutes);
+
+
+const tiposUsuarioRoutes = require('./routes/tiposUsuario.routes');
+app.use('/tiposUsuario', tiposUsuarioRoutes);
+
 // Arranque
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
