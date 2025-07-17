@@ -22,6 +22,8 @@ const ESTADOS = [
   { estadoId: 4, descripcion: "Bloqueado" }
 ];
 
+const ITEMS_POR_PAGINA = 10;
+
 const CambiarEstado: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -29,8 +31,15 @@ const CambiarEstado: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [usuarioIdInput, setUsuarioIdInput] = useState<string>('');
   const [estadoSeleccionado, setEstadoSeleccionado] = useState<string>('');
+  const [paginaActual, setPaginaActual] = useState(1);
 
   const usuarioLogueado = useSelector((state: RootState) => state.login.Usuario);
+
+  // Cálculos para la paginación
+  const totalPaginas = Math.ceil(usuarios.length / ITEMS_POR_PAGINA);
+  const indiceInicio = (paginaActual - 1) * ITEMS_POR_PAGINA;
+  const indiceFin = indiceInicio + ITEMS_POR_PAGINA;
+  const usuariosPaginados = usuarios.slice(indiceInicio, indiceFin);
 
   const fetchUsuarios = async () => {
     setLoading(true);
@@ -90,6 +99,22 @@ const CambiarEstado: React.FC = () => {
     }
   };
 
+  const handleCambiarPagina = (nuevaPagina: number) => {
+    setPaginaActual(nuevaPagina);
+  };
+
+  const handlePaginaAnterior = () => {
+    if (paginaActual > 1) {
+      setPaginaActual(paginaActual - 1);
+    }
+  };
+
+  const handlePaginaSiguiente = () => {
+    if (paginaActual < totalPaginas) {
+      setPaginaActual(paginaActual + 1);
+    }
+  };
+
   useEffect(() => {
     if (!usuarioLogueado) {
       const usuarioLocal = localStorage.getItem("usuario");
@@ -104,6 +129,11 @@ const CambiarEstado: React.FC = () => {
       fetchUsuarios();
     }
   }, [usuarioLogueado]);
+
+  // Resetear a la primera página cuando cambie el número de usuarios
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [usuarios.length]);
 
   return (
     <Layout>
@@ -148,26 +178,77 @@ const CambiarEstado: React.FC = () => {
           ) : error ? (
             <div className="p-4 bg-red-100 text-red-700 rounded-md">{error}</div>
           ) : (
-            <table className="w-full table-auto border-collapse">
-              <thead>
-                <tr className="bg-gray-100 text-left text-sm">
-                  <th className="p-2 border">ID</th>
-                  <th className="p-2 border">Nombre</th>
-                  <th className="p-2 border">Correo</th>
-                  <th className="p-2 border">Estado Actual</th>
-                </tr>
-              </thead>
-              <tbody>
-                {usuarios.map((usuario) => (
-                  <tr key={usuario.id} className="text-sm border-t">
-                    <td className="p-2 border">{usuario.id}</td>
-                    <td className="p-2 border">{usuario.nombre_completo}</td>
-                    <td className="p-2 border">{usuario.email}</td>
-                    <td className="p-2 border">{usuario.estado_nombre}</td>
+            <>
+              <div className="mb-4 text-sm text-gray-600">
+                Mostrando {indiceInicio + 1} - {Math.min(indiceFin, usuarios.length)} de {usuarios.length} usuarios
+              </div>
+              
+              <table className="w-full table-auto border-collapse">
+                <thead>
+                  <tr className="bg-gray-100 text-left text-sm">
+                    <th className="p-2 border">ID</th>
+                    <th className="p-2 border">Nombre</th>
+                    <th className="p-2 border">Correo</th>
+                    <th className="p-2 border">Estado Actual</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {usuariosPaginados.map((usuario) => (
+                    <tr key={usuario.id} className="text-sm border-t">
+                      <td className="p-2 border">{usuario.id}</td>
+                      <td className="p-2 border">{usuario.nombre_completo}</td>
+                      <td className="p-2 border">{usuario.email}</td>
+                      <td className="p-2 border">{usuario.estado_nombre}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Controles de paginación */}
+              {totalPaginas > 1 && (
+                <div className="flex justify-between items-center mt-4">
+                  <button
+                    onClick={handlePaginaAnterior}
+                    disabled={paginaActual === 1}
+                    className={`px-3 py-1 rounded ${
+                      paginaActual === 1
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                    }`}
+                  >
+                    Anterior
+                  </button>
+
+                  <div className="flex space-x-1">
+                    {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((numeroPagina) => (
+                      <button
+                        key={numeroPagina}
+                        onClick={() => handleCambiarPagina(numeroPagina)}
+                        className={`px-3 py-1 rounded ${
+                          numeroPagina === paginaActual
+                            ? 'bg-blue-500 text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        {numeroPagina}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handlePaginaSiguiente}
+                    disabled={paginaActual === totalPaginas}
+                    className={`px-3 py-1 rounded ${
+                      paginaActual === totalPaginas
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-500 text-white hover:bg-blue-600'
+                    }`}
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
