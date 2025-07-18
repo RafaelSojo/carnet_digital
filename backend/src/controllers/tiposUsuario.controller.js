@@ -2,12 +2,25 @@ const TipoUsuario = require('../models/TiposUsuario');
 const Bitacora = require('../models/Bitacora');
 const { Op } = require('sequelize');
 
-// GET /tipousuario
+// Función auxiliar para registrar errores
+const registrarErrorEnBitacora = async (usuarioId, mensaje) => {
+  try {
+    await Bitacora.create({
+      usuario: usuarioId || 'Sistema',
+      accion: 'ERROR',
+      descripcion: { error: mensaje }
+    });
+  } catch (err) {
+    console.error('Error al registrar en bitácora:', err);
+  }
+};
+
+// GET /tiposusuario
 exports.obtenerTiposUsuario = async (req, res) => {
   try {
     const tipos = await TipoUsuario.findAll({
-      attributes: ['id', 'nombre'],
-      order: [['nombre', 'ASC']]
+      attributes: ['id', 'Nombre'],
+      order: [['Nombre', 'ASC']]
     });
 
     await Bitacora.create({
@@ -24,17 +37,16 @@ exports.obtenerTiposUsuario = async (req, res) => {
   }
 };
 
-// GET /tipousuario/:id
+// GET /tiposusuario/:id
 exports.obtenerTipoUsuarioPorId = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    if (!id || id.toString().trim() === '') {
-      return res.status(400).json({ error: 'El ID es requerido y no puede estar vacío' });
+    const id = parseInt(req.params.id, 10);
+    if (!id || isNaN(id) || id <= 0) {
+      return res.status(400).json({ error: 'El ID es requerido y debe ser un número positivo' });
     }
 
     const tipo = await TipoUsuario.findByPk(id, {
-      attributes: ['id', 'nombre']
+      attributes: ['id', 'Nombre']
     });
 
     if (!tipo) {
@@ -55,12 +67,12 @@ exports.obtenerTipoUsuarioPorId = async (req, res) => {
   }
 };
 
-// POST /tipousuario
+// POST /tiposusuario
 exports.crearTipoUsuario = async (req, res) => {
   const { id, nombre } = req.body;
 
-  if (!id || id.toString().trim() === '') {
-    return res.status(400).json({ error: 'El ID es requerido y no puede estar vacío' });
+  if (!id || isNaN(id) || parseInt(id, 10) <= 0) {
+    return res.status(400).json({ error: 'El ID es requerido, debe ser un número entero positivo' });
   }
 
   if (!nombre || nombre.toString().trim() === '') {
@@ -68,19 +80,19 @@ exports.crearTipoUsuario = async (req, res) => {
   }
 
   try {
-    const existenteId = await TipoUsuario.findOne({ where: { id: id.toString().trim() } });
+    const existenteId = await TipoUsuario.findByPk(parseInt(id, 10));
     if (existenteId) {
       return res.status(400).json({ error: 'Ya existe un tipo de usuario con ese ID' });
     }
 
-    const existenteNombre = await TipoUsuario.findOne({ where: { nombre: nombre.trim() } });
+    const existenteNombre = await TipoUsuario.findOne({ where: { Nombre: nombre.trim() } });
     if (existenteNombre) {
       return res.status(400).json({ error: 'Ya existe un tipo de usuario con ese nombre' });
     }
 
     const nuevoTipo = await TipoUsuario.create({
-      id: id.toString().trim(),
-      nombre: nombre.trim()
+      id: parseInt(id, 10),
+      Nombre: nombre.trim()
     });
 
     await Bitacora.create({
@@ -88,7 +100,7 @@ exports.crearTipoUsuario = async (req, res) => {
       accion: 'CREATE',
       descripcion: {
         mensaje: 'El usuario creó un nuevo tipo de usuario',
-        datos: { id: nuevoTipo.id, nombre: nuevoTipo.nombre }
+        datos: { id: nuevoTipo.id, nombre: nuevoTipo.Nombre }
       }
     });
 
@@ -100,13 +112,13 @@ exports.crearTipoUsuario = async (req, res) => {
   }
 };
 
-// PUT /tipousuario/:id
+// PUT /tiposusuario/:id
 exports.actualizarTipoUsuario = async (req, res) => {
-  const { id } = req.params;
+  const id = parseInt(req.params.id, 10);
   const { nombre } = req.body;
 
-  if (!id || id.toString().trim() === '') {
-    return res.status(400).json({ error: 'El ID es requerido y no puede estar vacío' });
+  if (!id || isNaN(id) || id <= 0) {
+    return res.status(400).json({ error: 'El ID es requerido y debe ser un número positivo' });
   }
 
   if (!nombre || nombre.toString().trim() === '') {
@@ -121,7 +133,7 @@ exports.actualizarTipoUsuario = async (req, res) => {
 
     const existente = await TipoUsuario.findOne({
       where: {
-        nombre: nombre.trim(),
+        Nombre: nombre.trim(),
         id: { [Op.ne]: id }
       }
     });
@@ -130,9 +142,9 @@ exports.actualizarTipoUsuario = async (req, res) => {
       return res.status(400).json({ error: 'Ya existe un tipo de usuario con ese nombre' });
     }
 
-    const nombreAnterior = tipo.nombre;
+    const nombreAnterior = tipo.Nombre;
 
-    tipo.nombre = nombre.trim();
+    tipo.Nombre = nombre.trim();
     await tipo.save();
 
     await Bitacora.create({
@@ -140,7 +152,7 @@ exports.actualizarTipoUsuario = async (req, res) => {
       accion: 'UPDATE',
       descripcion: {
         antes: { id: tipo.id, nombre: nombreAnterior },
-        despues: { id: tipo.id, nombre: tipo.nombre }
+        despues: { id: tipo.id, nombre: tipo.Nombre }
       }
     });
 
@@ -152,12 +164,12 @@ exports.actualizarTipoUsuario = async (req, res) => {
   }
 };
 
-// DELETE /tipousuario/:id
+// DELETE /tiposusuario/:id
 exports.eliminarTipoUsuario = async (req, res) => {
-  const { id } = req.params;
+  const id = parseInt(req.params.id, 10);
 
-  if (!id || id.toString().trim() === '') {
-    return res.status(400).json({ error: 'El ID es requerido y no puede estar vacío' });
+  if (!id || isNaN(id) || id <= 0) {
+    return res.status(400).json({ error: 'El ID es requerido y debe ser un número positivo' });
   }
 
   try {
@@ -166,7 +178,7 @@ exports.eliminarTipoUsuario = async (req, res) => {
       return res.status(404).json({ error: `No existe tipo de usuario con ID ${id}` });
     }
 
-    const tipoEliminado = { id: tipo.id, nombre: tipo.nombre };
+    const tipoEliminado = { id: tipo.id, nombre: tipo.Nombre };
 
     await tipo.destroy();
 
@@ -184,18 +196,5 @@ exports.eliminarTipoUsuario = async (req, res) => {
     console.error('Error al eliminar tipo de usuario:', error);
     await registrarErrorEnBitacora(req.usuarioId, error.message);
     return res.status(500).json({ error: 'Error interno del servidor' });
-  }
-};
-
-// Función auxiliar para registrar errores
-const registrarErrorEnBitacora = async (usuarioId, mensaje) => {
-  try {
-    await Bitacora.create({
-      usuario: usuarioId || 'Sistema',
-      accion: 'ERROR',
-      descripcion: { error: mensaje }
-    });
-  } catch (err) {
-    console.error('Error al registrar en bitácora:', err);
   }
 };

@@ -14,14 +14,14 @@ import {
 
 interface TipoUsuario {
   id: number;
-  nombre: string;
+  Nombre: string;
 }
 
 const TiposUsuario: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [tipos, setTipos] = useState<TipoUsuario[]>([]);
   const [nombre, setNombre] = useState<string>("");
-  const [id, setId] = useState<string>("");  // Mantengo string para input, parseamos luego
+  const [id, setId] = useState<string>("");
   const [editandoId, setEditandoId] = useState<number | null>(null);
   const usuarioLogueado = useSelector((state: RootState) => state.login.Usuario);
 
@@ -29,7 +29,7 @@ const TiposUsuario: React.FC = () => {
     try {
       const data = await obtenerTiposUsuario();
       setTipos(data);
-    } catch (error) {
+    } catch {
       Swal.fire("Error", "No se pudieron obtener los tipos de usuario", "error");
     }
   };
@@ -37,7 +37,7 @@ const TiposUsuario: React.FC = () => {
   const handleCrear = async () => {
     const parsedId = parseInt(id.trim(), 10);
     if (isNaN(parsedId) || parsedId <= 0 || nombre.trim() === "") {
-      Swal.fire("Atención", "El ID debe ser un entero positivo y el nombre no puede estar vacío", "warning");
+      Swal.fire("Atención", "Todos los datos son requeridos y no pueden ser vacíos", "warning");
       return;
     }
 
@@ -47,15 +47,15 @@ const TiposUsuario: React.FC = () => {
       setId("");
       setNombre("");
       await fetchTipos();
-    } catch {
-      Swal.fire("Error", "No se pudo crear el tipo de usuario", "error");
+    } catch (error: any) {
+      Swal.fire("Error", error.response?.data?.error || "No se pudo crear el tipo de usuario", "error");
     }
   };
 
   const handleEditar = (tipo: TipoUsuario) => {
     setEditandoId(tipo.id);
     setId(tipo.id.toString());
-    setNombre(tipo.nombre);
+    setNombre(tipo.Nombre);
   };
 
   const handleActualizar = async () => {
@@ -71,8 +71,8 @@ const TiposUsuario: React.FC = () => {
       setId("");
       setNombre("");
       await fetchTipos();
-    } catch {
-      Swal.fire("Error", "No se pudo actualizar el tipo de usuario", "error");
+    } catch (error: any) {
+      Swal.fire("Error", error.response?.data?.error || "No se pudo actualizar el tipo de usuario", "error");
     }
   };
 
@@ -81,8 +81,8 @@ const TiposUsuario: React.FC = () => {
       await eliminarTipoUsuario(id);
       Swal.fire("Éxito", "Tipo de usuario eliminado", "success");
       await fetchTipos();
-    } catch {
-      Swal.fire("Error", "No se pudo eliminar el tipo de usuario", "error");
+    } catch (error: any) {
+      Swal.fire("Error", error.response?.data?.error || "No se pudo eliminar el tipo de usuario", "error");
     }
   };
 
@@ -94,8 +94,8 @@ const TiposUsuario: React.FC = () => {
     }
 
     try {
-      const tipo = await obtenerTipoUsuarioPorId(parsedId.toString());
-      Swal.fire("Resultado", `ID: ${tipo.id} - Nombre: ${tipo.nombre}`, "info");
+      const tipo = await obtenerTipoUsuarioPorId(parsedId);
+      Swal.fire("Resultado", `ID: ${tipo.id} - Nombre: ${tipo.Nombre}`, "info");
     } catch {
       Swal.fire("Error", "No se encontró el tipo de usuario", "error");
     }
@@ -105,8 +105,7 @@ const TiposUsuario: React.FC = () => {
     if (!usuarioLogueado) {
       const usuarioLocal = localStorage.getItem("usuario");
       if (usuarioLocal) {
-        const usuarioParseado = JSON.parse(usuarioLocal);
-        dispatch(loginSuccess(usuarioParseado));
+        dispatch(loginSuccess(JSON.parse(usuarioLocal)));
       } else {
         dispatch(logout());
       }
@@ -128,9 +127,9 @@ const TiposUsuario: React.FC = () => {
               type="number"
               value={id}
               onChange={(e) => setId(e.target.value)}
-              placeholder="ID del tipo (entero positivo)"
+              placeholder="ID"
               className="border px-3 py-2 rounded w-full sm:w-1/3"
-              disabled={editandoId !== null} // No cambiar ID al editar
+              disabled={editandoId !== null}
               min={1}
             />
             <input
@@ -177,7 +176,7 @@ const TiposUsuario: React.FC = () => {
               {tipos.map((tipo) => (
                 <tr key={tipo.id} className="text-sm border-t">
                   <td className="p-2 border">{tipo.id}</td>
-                  <td className="p-2 border">{tipo.nombre}</td>
+                  <td className="p-2 border">{tipo.Nombre}</td>
                   <td className="p-2 border flex gap-2">
                     <button
                       onClick={() => handleEditar(tipo)}

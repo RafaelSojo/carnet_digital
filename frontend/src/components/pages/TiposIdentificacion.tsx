@@ -126,14 +126,14 @@ const TipoIdentificacionPage: React.FC = () => {
               type="text"
               value={id}
               onChange={(e) => setId(e.target.value)}
-              placeholder="ID del tipo"
+              placeholder="ID"
               className="border px-3 py-2 rounded w-full sm:w-1/3"
             />
             <input
               type="text"
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-              placeholder="Descripción"
+              placeholder="Nombre"
               className="border px-3 py-2 rounded w-full sm:w-1/3"
             />
             <div className="flex flex-col gap-2">
