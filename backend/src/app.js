@@ -45,6 +45,9 @@ app.use('/tiposIdentificacion', tiposIdentificacionRoutes);
 const tiposUsuarioRoutes = require('./routes/tiposUsuario.routes');
 app.use('/tiposUsuario', tiposUsuarioRoutes);
 
+const fotografia = require('./routes/fotografia.routes');
+app.use('/usuario/fotografia', fotografia);
+
 // Arranque
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

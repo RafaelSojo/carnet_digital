@@ -12,7 +12,11 @@ const Usuario = sequelize.define('Usuario', {
   tipo_usuario: { type: DataTypes.STRING, allowNull: false },
   bloqueado: { type: DataTypes.BOOLEAN, defaultValue: false, allowNull: false },
   intentos_fallidos: { type: DataTypes.INTEGER, defaultValue: 0, allowNull: false },
-  estadoId: { type: DataTypes.INTEGER, allowNull: true }
+  estadoId: { type: DataTypes.INTEGER, allowNull: true },
+
+  // Nueva columna para fotografía
+  fotografia: { type: DataTypes.BLOB('long'), allowNull: true }
+
 }, {
   tableName: 'usuarios',
   timestamps: false

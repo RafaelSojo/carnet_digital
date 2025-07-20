@@ -17,6 +17,7 @@ import Login from "./components/pages/Login";
 //Fifes
 import TiposIdentificacion from "./components/pages/TiposIdentificacion";
 import TiposUsuario from "./components/pages/TiposUsuario";
+import Fotografia from "./components/pages/Fotografia";
 
 // Componente para proteger rutas privadas
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -66,8 +67,7 @@ const App: React.FC = () => {
           }
         />
 
-
-          <Route
+        <Route
           path="/TiposIdentificacion"
           element={
             <ProtectedRoute>
@@ -84,7 +84,14 @@ const App: React.FC = () => {
             </ProtectedRoute>
           }
         />
-
+        <Route
+          path="/usuario/fotografia"
+          element={
+            <ProtectedRoute>
+              <Fotografia />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Redirección por defecto */}
         <Route path="*" element={<Navigate to="/login" replace />} />
