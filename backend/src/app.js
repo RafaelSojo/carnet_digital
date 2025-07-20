@@ -1,8 +1,8 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const swaggerUi = require('swagger-ui-express');
-const swaggerJsdoc = require('swagger-jsdoc');
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsdoc = require("swagger-jsdoc");
 
 dotenv.config();
 
@@ -14,41 +14,48 @@ app.use(express.json());
 
 // Swagger config
 const swaggerDefinition = {
-  openapi: '3.0.0',
+  openapi: "3.0.0",
   info: {
-    title: 'API Carnet Digital',
-    version: '1.0.0',
-    description: 'Documentación del API usando Swagger',
+    title: "API Carnet Digital",
+    version: "1.0.0",
+    description: "Documentación del API usando Swagger",
   },
-  servers: [{ url: 'http://localhost:' + process.env.PORT }],
+  servers: [{ url: "http://localhost:" + process.env.PORT }],
 };
 
 const swaggerOptions = {
   swaggerDefinition,
-  apis: ['./src/routes/*.js'],
+  apis: ["./src/routes/*.js"],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Rutas Login y Token.
-const loginRoutes = require('./routes/login.routes');
-app.use('/', loginRoutes);
+const loginRoutes = require("./routes/login.routes");
+app.use("/", loginRoutes);
 //SRV9
-const usuarioRoutes = require('./routes/usuarios.routes');
-app.use('/usuarios', usuarioRoutes);
+const usuarioRoutes = require("./routes/usuarios.routes");
+app.use("/usuarios", usuarioRoutes);
 
 //Fifes
 
-const tiposIdentificacionRoutes = require('./routes/tiposIdentificacion.routes');
-app.use('/tiposIdentificacion', tiposIdentificacionRoutes);
+const tiposIdentificacionRoutes = require("./routes/tiposIdentificacion.routes");
+app.use("/tiposIdentificacion", tiposIdentificacionRoutes);
 
+const tiposUsuarioRoutes = require("./routes/tiposUsuario.routes");
+app.use("/tiposUsuario", tiposUsuarioRoutes);
 
-const tiposUsuarioRoutes = require('./routes/tiposUsuario.routes');
-app.use('/tiposUsuario', tiposUsuarioRoutes);
+const fotografia = require("./routes/fotografia.routes");
+app.use("/usuario/fotografia", fotografia);
 
-const fotografia = require('./routes/fotografia.routes');
-app.use('/usuario/fotografia', fotografia);
+app.use((err, req, res, next) => {
+  console.error("Error no controlado:", err.stack);
+  res.status(500).json({
+    mensaje: "Error interno del servidor",
+    error: err.message,
+  });
+});
 
 // Arranque
 const PORT = process.env.PORT || 3000;
@@ -57,20 +64,20 @@ app.listen(PORT, () => {
 });
 
 //Para probar la conexion a la base de datos
-const sequelize = require('./config/database');
+const sequelize = require("./config/database");
 
-sequelize.authenticate()
-  .then(() => console.log('🔌 Conexión a la base de datos exitosa'))
-  .catch(err => console.error('❌ Error al conectar DB:', err));
-
-
+sequelize
+  .authenticate()
+  .then(() => console.log("🔌 Conexión a la base de datos exitosa"))
+  .catch((err) => console.error("❌ Error al conectar DB:", err));
 
 //Temporal para verificar si los modelos funcionan.
 
-require('./models/Usuario'); // Importa los modelos
+require("./models/Usuario"); // Importa los modelos
 
-require('./models/EstadoUsuario'); // Importa los modelos
+require("./models/EstadoUsuario"); // Importa los modelos
 
-sequelize.sync({ alter: false })
-  .then(() => console.log('✅ Modelos sincronizados con la base de datos'))
-  .catch((err) => console.error('❌ Error al sincronizar modelos:', err));
+sequelize
+  .sync({ alter: false })
+  .then(() => console.log("✅ Modelos sincronizados con la base de datos"))
+  .catch((err) => console.error("❌ Error al sincronizar modelos:", err));

@@ -25,7 +25,7 @@ exports.actualizarFotografia = async (req, res) => {
     }
 
     const usuario = await Usuario.findOne({ where: { usuario: usuarioID } });
-    if (!usuarioID) {
+    if (!usuario) {
       return res
         .status(404)
         .json({ mensaje: `No existe usuario ${usuarioID}` });
@@ -56,9 +56,13 @@ exports.obtenerFotografia = async (req, res) => {
 
   try {
     const usuario = await Usuario.findOne({ where: { usuario: usuarioID } });
-
-    if (!usuario || !usuario.fotografia) {
-      return res.status(404).json({ mensaje: "No existe fotografia" });
+    if (!usuario) {
+      return res.status(404).json({ mensaje: `No existe el Usuario ${usuarioID}` });
+    }
+    if (!usuario.fotografia) {
+      return res
+        .status(404)
+        .json({ mensaje: `No existe fotografia para el Usuario ${usuarioID}` });
     }
 
     const imagenConFormato = `data:image/jpeg;base64,${usuario.fotografia}`;

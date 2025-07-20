@@ -88,10 +88,9 @@ const FotografiaUsuario: React.FC = () => {
         fileInputRef.current.value = "";
       }
     } catch (err: any) {
-      console.error("Error al actualizar fotografía:", err);
+      console.error("Error al actualizar la fotografía:", err);
       console.log("Error completo:", err.response?.data);
       console.log("Error completo:", err.response?.mensaje);
-
       const mensajeError =
         err.response?.data?.mensaje ||
         err.response?.data?.error ||
@@ -132,14 +131,13 @@ const FotografiaUsuario: React.FC = () => {
       setusuarioID("");
       setFotoBase64("");
     } catch (err: any) {
-      console.error("Error al eliminar fotografía:", err);
+      console.error("Error al Eliminar la fotografía:", err);
       console.log("Error completo:", err.response?.data);
       console.log("Error completo:", err.response?.mensaje);
-
       const mensajeError =
         err.response?.data?.mensaje ||
         err.response?.data?.error ||
-        "Error al eliminar la fotografia";
+        "Erro al Eliminar la fotografia";
       Swal.fire("Error", mensajeError, "error");
     }
   };
