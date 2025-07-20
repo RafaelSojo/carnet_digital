@@ -2,7 +2,7 @@ import api from "./axios";
 
 export const obtenerFotografia = async (usuario: string): Promise<string> => {
   const response = await api.get(`/usuario/fotografia/${usuario}`);
-  return response.data.foto;
+  return response.data.fotografia;
 };
 
 export const actualizarFotografia = async (

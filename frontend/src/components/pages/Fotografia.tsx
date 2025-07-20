@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../redux/store";
 import { loginSuccess, logout } from "../../redux/slices/loginSlice";
@@ -15,16 +15,33 @@ const FotografiaUsuario: React.FC = () => {
   const usuarioLogueado = useSelector(
     (state: RootState) => state.login.Usuario
   );
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [fotoBase64, setFotoBase64] = useState<string>("");
+  const [usuarioID, setusuarioID] = useState<string>("");
 
   const cargarFotografia = async () => {
+    if (!usuarioID) {
+      Swal.fire(
+        "Advertencia",
+        "Debe ingresar un correo de usuario valido",
+        "warning"
+      );
+      return;
+    }
     try {
       if (usuarioLogueado?.Usuario) {
-        const base64 = await obtenerFotografia(usuarioLogueado.Usuario);
+        const base64 = await obtenerFotografia(usuarioID);
         setFotoBase64(base64);
       }
-    } catch {
-      setFotoBase64("");
+    } catch (err: any) {
+      console.error("Error al obtener la fotografía:", err);
+      console.log("Error completo:", err.response?.data);
+      console.log("Error completo:", err.response?.mensaje);
+      const mensajeError =
+        err.response?.data?.mensaje ||
+        err.response?.data?.error ||
+        "Erro al obtener la fotografia";
+      Swal.fire("Error", mensajeError, "error");
     }
   };
 
@@ -41,47 +58,100 @@ const FotografiaUsuario: React.FC = () => {
   };
 
   const handleActualizarFoto = async () => {
+    if (!usuarioID && !fotoBase64) {
+      Swal.fire(
+        "Advertencia",
+        "Todos los datos son requeridos y no pueden ser vacíos",
+        "warning"
+      );
+      return;
+    }
+    if (!usuarioID) {
+      Swal.fire(
+        "Advertencia",
+        "Debe ingresar un correo de usuario valido",
+        "warning"
+      );
+      return;
+    }
     if (!fotoBase64) {
       Swal.fire("Advertencia", "Debe seleccionar una imagen válida", "warning");
       return;
     }
     try {
-      await actualizarFotografia(usuarioLogueado?.Usuario, fotoBase64);
+      const base64Clean = fotoBase64.split(",")[1];
+      await actualizarFotografia(usuarioID, base64Clean);
       Swal.fire("Éxito", "Fotografía actualizada", "success");
+      setusuarioID("");
+      setFotoBase64("");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     } catch (err: any) {
-      Swal.fire(
-        "Error",
-        err.response?.data?.mensaje || "No se pudo actualizar la foto",
-        "error"
-      )
+      console.error("Error al actualizar fotografía:", err);
+      console.log("Error completo:", err.response?.data);
+      console.log("Error completo:", err.response?.mensaje);
+
+      const mensajeError =
+        err.response?.data?.mensaje ||
+        err.response?.data?.error ||
+        "Error al actualizar la fotografia";
+      Swal.fire("Error", mensajeError, "error");
     }
   };
 
   const handleEliminarFoto = async () => {
+    if (!usuarioID && !fotoBase64) {
+      Swal.fire(
+        "Advertencia",
+        "Todos los datos son requeridos y no pueden ser vacíos",
+        "warning"
+      );
+      return;
+    }
+    if (!usuarioID) {
+      Swal.fire(
+        "Advertencia",
+        "Debe ingresar un correo de usuario valido",
+        "warning"
+      );
+      return;
+    }
+    if (!fotoBase64) {
+      Swal.fire(
+        "Advertencia",
+        "Debe obtener la imagen del usuario previo a eliminar",
+        "warning"
+      );
+      return;
+    }
     try {
-      await eliminarFotografia(usuarioLogueado?.Usuario);
+      await eliminarFotografia(usuarioID);
       setFotoBase64("");
       Swal.fire("Éxito", "Fotografia Eliminada", "success");
-      
-    } catch{
-      Swal.fire(
-        "Error", "No se pudo eliminar la foto", "error"
-      );
+      setusuarioID("");
+      setFotoBase64("");
+    } catch (err: any) {
+      console.error("Error al eliminar fotografía:", err);
+      console.log("Error completo:", err.response?.data);
+      console.log("Error completo:", err.response?.mensaje);
+
+      const mensajeError =
+        err.response?.data?.mensaje ||
+        err.response?.data?.error ||
+        "Error al eliminar la fotografia";
+      Swal.fire("Error", mensajeError, "error");
     }
   };
 
   useEffect(() => {
-    if (!usuarioLogueado) {
-      const usuarioLocal = localStorage.getItem("usuario");
-      if (usuarioLocal) {
-        dispatch(loginSuccess(JSON.parse(usuarioLocal)));
-      } else {
-        dispatch(logout());
-      }
+    const usuarioLocal = localStorage.getItem("usuario");
+    if (usuarioLocal) {
+      dispatch(loginSuccess(JSON.parse(usuarioLocal)));
     } else {
-      cargarFotografia();
+      dispatch(logout());
     }
-  }, [usuarioLogueado]);
+  }, []);
 
   return (
     <Layout>
@@ -98,15 +168,33 @@ const FotografiaUsuario: React.FC = () => {
               className="w-48 h-auto mb-4 rounded border mx-auto"
             />
           ) : (
-            <p className="text-center text-gray-500 mb-4">No hay fotografía cargada</p>
+            <p className="text-center text-gray-500 mb-4">
+              No hay fotografía cargada
+            </p>
           )}
 
           <input
+            type="text"
+            value={usuarioID}
+            onChange={(e) => setusuarioID(e.target.value)}
+            placeholder="Ingrese el correo del usuario"
+            className="border px-3 py-2 rounded w-full mb-4"
+          />
+
+          <input
             type="file"
+            id="fileUpload"
             accept="image/*"
             onChange={handleSleccionarFoto}
-            className="mb-4 block mx-auto"
+            ref={fileInputRef}
+            className="hidden"
           />
+          <label
+            htmlFor="fileUpload"
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer block text-center mb-4"
+          >
+            Seleccionar Fotografía
+          </label>
 
           <div className="flex justify-center gap-4">
             <button
